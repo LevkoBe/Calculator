@@ -6,9 +6,18 @@ List<string> tokens = new List<string>();
 
 foreach (var character in input)
 {
-    if ((character == '-' && buffer is "" && tokens[^1] == "(") || Char.IsDigit(character))
+    if ((character == '-' && (tokens.Count == 0 || buffer is "" && tokens[^1] == "(")) || Char.IsDigit(character))
     {
-        buffer += character;
+        if (character == '-' && buffer.Length != 0)
+        {
+            tokens.Add(buffer);
+            tokens.Add(character.ToString());
+            buffer = "";
+        }
+        else
+        {
+            buffer += character;
+        }
     }
     else if (operators.Contains(character))
     {
