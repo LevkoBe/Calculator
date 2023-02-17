@@ -114,3 +114,72 @@ public class ArrayList
     }
 
 }
+
+public class Stack
+{
+    private string[] _array = new string[10];
+    private int _pointer = 0;
+
+    public void Push(string value)
+    {
+        _array[_pointer] = value;
+        _pointer++;
+        if (_pointer == _array.Length)
+        {
+            var expandedArray = new string[_array.Length * 2];
+            for (var i = 0; i < _pointer; i++)
+            {
+                expandedArray[i] = _array[i];
+            }
+
+            _array = expandedArray;
+        }
+    }
+
+    public string? Pop()
+    {
+        if (_pointer == 0)
+        {
+            return null;
+        }
+        _pointer--;
+        return _array[_pointer];
+    }
+}
+public class Queue
+{
+    private string[] _array = new string[10];
+    private int _pointer = 0;
+
+    public void Enqueue(string value)
+    {
+        _array[_pointer] = value;
+        _pointer++;
+        if (_pointer == _array.Length)
+        {
+            var expandedArray = new string[_array.Length * 2];
+            for (var i = 0; i < _pointer; i++)
+            {
+                expandedArray[i] = _array[i];
+            }
+
+            _array = expandedArray;
+        }
+    }
+
+    public string? Dequeue()
+    {
+        if (_pointer == 0)
+        {
+            return null;
+        }
+
+        var value = _array[0];
+        _pointer--;
+        for (var i = 0; i < _pointer; i++)
+        {
+            _array[i] = _array[i + 1];
+        }
+        return value;
+    }
+}
