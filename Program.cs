@@ -5,6 +5,8 @@ var input = Console.ReadLine();
 var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
 var buffer = "";
 var tokens = new Queue();
+var west = new Queue();
+var south = new Stack();
 
 foreach (var character in input)
 {
@@ -41,7 +43,57 @@ foreach (var token in tokens.GetElements())
 {
     Console.WriteLine(token);
 }
+Console.WriteLine("\n\n");
+while (tokens.Length() != 0)
+{
+    var something = tokens.Dequeue();
+    if (something.Length != 1 || Char.IsDigit(something.ToCharArray()[0]))
+    {
+        west.Enqueue(something);
+    }
+    else
+    {
+        if (something is "+" or "-")
+        {
+            while (south.Length() != 0)
+            {
+                west.Enqueue(south.Pop());
+            }
+            south.Push(something);
+        }
+        else if (something is "*" or "/")
+        {
+            while (south.GetLast() is "*" or "/" or "^")
+            {
+                west.Enqueue(south.Pop());
+            }
+            south.Push(something);
+        }
+        else if (something is "^" or "(")
+        {
+            south.Push(something);
+        }
+        else
+        {
+            while (south.GetLast() != "(")
+            {
+                west.Enqueue(south.Pop());
+            }
 
+            south.Pop();
+        }
+    }
+}
+
+while (south.Length() != 0)
+{
+    west.Enqueue(south.Pop());
+}
+
+foreach (var token in west.GetElements())
+{
+    Console.WriteLine(token);
+}
 public class ArrayList
 {
     private string[] _array = new string[10];
@@ -144,6 +196,16 @@ public class Stack
         }
         _pointer--;
         return _array[_pointer];
+    }
+
+    public int Length()
+    {
+        return _pointer;
+    }
+
+    public string GetLast()
+    {
+        return _array[_pointer-1];
     }
 }
 
