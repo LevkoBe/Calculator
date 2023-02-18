@@ -4,16 +4,16 @@ using System.Collections;
 var input = Console.ReadLine();
 var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
 var buffer = "";
-var tokens = new ArrayList();
+var tokens = new Queue();
 
 foreach (var character in input)
 {
-    if ((character == '-' && (tokens.Count() == 0 || buffer is "" && tokens.GetAt(tokens.Count() - 1) == "(")) || Char.IsDigit(character))
+    if ((character == '-' && (tokens.Length() == 0 || buffer is "" && tokens.GetAt(tokens.Length() - 1) == "(")) || Char.IsDigit(character))
     {
         if (character == '-' && buffer.Length != 0)
         {
-            tokens.Add(buffer);
-            tokens.Add(character.ToString());
+            tokens.Enqueue(buffer);
+            tokens.Enqueue(character.ToString());
             buffer = "";
         }
         else
@@ -25,16 +25,16 @@ foreach (var character in input)
     {
         if (buffer != "")
         {
-            tokens.Add(buffer);
+            tokens.Enqueue(buffer);
             buffer = "";
         }
-        tokens.Add(character.ToString());
+        tokens.Enqueue(character.ToString());
     }
 }
 
 if (buffer != "")
 {
-    tokens.Add(buffer);
+    tokens.Enqueue(buffer);
 }
 
 foreach (var token in tokens.GetElements())
@@ -146,6 +146,7 @@ public class Stack
         return _array[_pointer];
     }
 }
+
 public class Queue
 {
     private string[] _array = new string[10];
@@ -181,5 +182,20 @@ public class Queue
             _array[i] = _array[i + 1];
         }
         return value;
+    }
+
+    public int Length()
+    {
+        return _pointer;
+    }
+
+    public string GetAt(int index)
+    {
+        return _array[index];
+    }
+
+    public string[] GetElements()
+    {
+        return _array[.._pointer];
     }
 }
