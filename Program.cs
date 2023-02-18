@@ -48,13 +48,17 @@ while (tokens.Length() != 0)
     {
         west.Enqueue(something);
     }
+    else if (south.Length() == 0)
+    {
+        south.Push(something);
+    }
     else
     {
         switch (something)
         {
             case "+" or "-":
             {
-                while (south.Length() != 0)
+                while (south.Length() != 0 && south.GetLast() != "(")
                 {
                     west.Enqueue(south.Pop());
                 }
@@ -96,6 +100,11 @@ foreach (var token in west.GetElements())
 {
     Console.WriteLine(token);
 }
+
+
+
+
+
 public class ArrayList
 {
     private string[] _array = new string[10];
