@@ -34,10 +34,7 @@ foreach (var character in input)
     }
 }
 
-if (buffer != "")
-{
-    tokens.Enqueue(buffer);
-}
+if (buffer != "") tokens.Enqueue(buffer);
 
 foreach (var token in tokens.GetElements())
 {
@@ -53,34 +50,39 @@ while (tokens.Length() != 0)
     }
     else
     {
-        if (something is "+" or "-")
+        switch (something)
         {
-            while (south.Length() != 0)
+            case "+" or "-":
             {
-                west.Enqueue(south.Pop());
+                while (south.Length() != 0)
+                {
+                    west.Enqueue(south.Pop());
+                }
+                south.Push(something);
+                break;
             }
-            south.Push(something);
-        }
-        else if (something is "*" or "/")
-        {
-            while (south.GetLast() is "*" or "/" or "^")
+            case "*" or "/":
             {
-                west.Enqueue(south.Pop());
+                while (south.GetLast() is "*" or "/" or "^")
+                {
+                    west.Enqueue(south.Pop());
+                }
+                south.Push(something);
+                break;
             }
-            south.Push(something);
-        }
-        else if (something is "^" or "(")
-        {
-            south.Push(something);
-        }
-        else
-        {
-            while (south.GetLast() != "(")
+            case "^" or "(":
+                south.Push(something);
+                break;
+            default:
             {
-                west.Enqueue(south.Pop());
-            }
+                while (south.GetLast() != "(")
+                {
+                    west.Enqueue(south.Pop());
+                }
 
-            south.Pop();
+                south.Pop();
+                break;
+            }
         }
     }
 }
@@ -176,37 +178,26 @@ public class Stack
     {
         _array[_pointer] = value;
         _pointer++;
-        if (_pointer == _array.Length)
+        if (_pointer != _array.Length) return;
+        var expandedArray = new string[_array.Length * 2];
+        for (var i = 0; i < _pointer; i++)
         {
-            var expandedArray = new string[_array.Length * 2];
-            for (var i = 0; i < _pointer; i++)
-            {
-                expandedArray[i] = _array[i];
-            }
-
-            _array = expandedArray;
+            expandedArray[i] = _array[i];
         }
+
+        _array = expandedArray;
     }
 
     public string? Pop()
     {
-        if (_pointer == 0)
-        {
-            return null;
-        }
+        if (_pointer == 0) return null;
         _pointer--;
         return _array[_pointer];
     }
 
-    public int Length()
-    {
-        return _pointer;
-    }
+    public int Length() => _pointer;
 
-    public string GetLast()
-    {
-        return _array[_pointer-1];
-    }
+    public string GetLast() => _array[_pointer-1];
 }
 
 public class Queue
@@ -218,24 +209,19 @@ public class Queue
     {
         _array[_pointer] = value;
         _pointer++;
-        if (_pointer == _array.Length)
+        if (_pointer != _array.Length) return;
+        var expandedArray = new string[_array.Length * 2];
+        for (var i = 0; i < _pointer; i++)
         {
-            var expandedArray = new string[_array.Length * 2];
-            for (var i = 0; i < _pointer; i++)
-            {
-                expandedArray[i] = _array[i];
-            }
-
-            _array = expandedArray;
+            expandedArray[i] = _array[i];
         }
+
+        _array = expandedArray;
     }
 
     public string? Dequeue()
     {
-        if (_pointer == 0)
-        {
-            return null;
-        }
+        if (_pointer == 0) return null;
 
         var value = _array[0];
         _pointer--;
@@ -246,18 +232,9 @@ public class Queue
         return value;
     }
 
-    public int Length()
-    {
-        return _pointer;
-    }
+    public int Length() => _pointer;
 
-    public string GetAt(int index)
-    {
-        return _array[index];
-    }
+    public string GetAt(int index) => _array[index];
 
-    public string[] GetElements()
-    {
-        return _array[.._pointer];
-    }
+    public string[] GetElements() => _array[.._pointer];
 }
