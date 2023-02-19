@@ -7,6 +7,7 @@ var buffer = "";
 var tokens = new Queue();
 var west = new Queue();
 var south = new Stack();
+var output = new Stack();
 
 foreach (var character in input)
 {
@@ -102,7 +103,48 @@ foreach (var token in west.GetElements())
 }
 
 
-
+while (west.Length() != 0)
+{
+    var element = west.Dequeue();
+    if (element.Length == 1 && operators.Contains(element.ToCharArray()[0]))
+    {
+        var number2 = int.Parse(output.Pop());
+        var number1 = int.Parse(output.Pop());
+        switch (element)
+        {
+            case "+":
+            {
+                output.Push((number1 + number2).ToString());
+                break;
+            }
+            case "-":
+            {
+                output.Push((number1 - number2).ToString());
+                break;
+            }
+            case "*":
+            {
+                output.Push((number1 * number2).ToString());
+                break;
+            }
+            case "/":
+            {
+                output.Push((number1 / number2).ToString());
+                break;
+            }
+            default:
+            {
+                output.Push(Math.Pow(number1, number2).ToString());
+                break;
+            }
+        }
+    }
+    else
+    {
+        output.Push(element);
+    }
+}
+Console.WriteLine(output.Pop());
 
 
 public class ArrayList
@@ -197,9 +239,9 @@ public class Stack
         _array = expandedArray;
     }
 
-    public string? Pop()
+    public string Pop()
     {
-        if (_pointer == 0) return null;
+        if (_pointer == 0) return "-0";
         _pointer--;
         return _array[_pointer];
     }
@@ -247,3 +289,4 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
+//- 3 -( - 3) * 7 ^ 2 * 3/  4 - 2  5
