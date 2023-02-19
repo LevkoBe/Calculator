@@ -108,8 +108,8 @@ while (west.Length() != 0)
     var element = west.Dequeue();
     if (element.Length == 1 && operators.Contains(element.ToCharArray()[0]))
     {
-        var number2 = int.Parse(output.Pop());
-        var number1 = int.Parse(output.Pop());
+        var number2 = float.Parse(output.Pop());
+        var number1 = float.Parse(output.Pop());
         switch (element)
         {
             case "+":
@@ -289,4 +289,4 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
-//- 3 -( - 3) * 7 ^ 2 * 3/  4 - 2  5
+//- 3 -( - 3) * 7 ^ 2 * 3/  4 - 2  5 / 4
