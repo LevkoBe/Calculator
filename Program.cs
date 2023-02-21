@@ -2,7 +2,7 @@
 using System.Collections;
 
 var input = Console.ReadLine();
-var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
+var operators = new char[] { '+', '-', '/', '*', '^', '(', ')', '!' };
 var buffer = "";
 var tokens = new Queue();
 var west = new Queue();
@@ -48,7 +48,7 @@ while (tokens.Length() != 0)
     {
         west.Enqueue(something);
     }
-    else if (south.Length() == 0)
+    else if (south.Length() == 0 && something != "!")
     {
         south.Push(something);
     }
@@ -74,8 +74,18 @@ while (tokens.Length() != 0)
                 south.Push(something);
                 break;
             }
-            case "^" or "(":
+            case "^":
+                while (south.GetLast() is "^")
+                {
+                    west.Enqueue(south.Pop());
+                }
                 south.Push(something);
+                break;
+            case "(":
+                south.Push(something);
+                break;
+            case "!":
+                west.Enqueue(something);
                 break;
             default:
             {
@@ -105,7 +115,11 @@ foreach (var token in west.GetElements())
 while (west.Length() != 0)
 {
     var element = west.Dequeue();
-    if (element.Length == 1 && operators.Contains(element.ToCharArray()[0]))
+    if (element == "!")
+    {
+        output.Push(Factorial(int.Parse(output.Pop())).ToString());
+    }
+    else if (element.Length == 1 && operators.Contains(element.ToCharArray()[0]))
     {
         var number2 = float.Parse(output.Pop());
         var number1 = float.Parse(output.Pop());
@@ -144,6 +158,12 @@ while (west.Length() != 0)
     }
 }
 Console.WriteLine(output.Pop());
+
+int Factorial(int number)
+{
+    if (number == 1) return 1;
+    return number * Factorial(number - 1);
+}
 
 
 public class ArrayList
@@ -247,7 +267,10 @@ public class Stack
 
     public int Length() => _pointer;
 
-    public string GetLast() => _array[_pointer-1];
+    public string GetLast()
+    {
+        return _pointer == 0 ? "0" : _array[_pointer-1];
+    }
 }
 
 public class Queue
@@ -288,4 +311,5 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
-//- 3 -( - 3) * 7 ^ 2 * 3/  4 - 2  5 / 4
+
+//-3 ^ 2 -( - 3) ^ 2 * 7 ^ 2 * 3/  4 - 2  5 / 4 + (2^2^ 2/ 8 * 3)!
