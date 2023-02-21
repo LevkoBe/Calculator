@@ -8,21 +8,13 @@ var tokens = new Queue();
 var west = new Queue();
 var south = new Stack();
 var output = new Stack();
+var start = true;
 
 foreach (var character in input)
 {
-    if ((character == '-' && (tokens.Length() == 0 || buffer is "" && tokens.GetAt(tokens.Length() - 1) == "(")) || Char.IsDigit(character))
+    if (Char.IsDigit(character))
     {
-        if (character == '-' && buffer.Length != 0)
-        {
-            tokens.Enqueue(buffer);
-            tokens.Enqueue(character.ToString());
-            buffer = "";
-        }
-        else
-        {
-            buffer += character;
-        }
+        buffer += character;
     }
     else if (operators.Contains(character))
     {
@@ -31,6 +23,13 @@ foreach (var character in input)
             tokens.Enqueue(buffer);
             buffer = "";
         }
+
+        if (start && character == '-')
+        {
+            tokens.Enqueue("0");
+        }
+        start = false || character == '(';
+
         tokens.Enqueue(character.ToString());
     }
 }
