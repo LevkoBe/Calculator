@@ -1,170 +1,169 @@
-﻿
+using System;
 using System.Collections;
 
-var input = Console.ReadLine();
-var operators = new char[] { '+', '-', '/', '*', '^', '(', ')', '!' };
-var buffer = "";
-var tokens = new Queue();
-var west = new Queue();
-var south = new Stack();
-var output = new Stack();
-var start = true;
-
-foreach (var character in input)
+class Program
 {
-    if (Char.IsDigit(character))
+    static void Main()
     {
-        buffer += character;
-    }
-    else if (operators.Contains(character))
-    {
-        if (buffer != "")
+        while (true)
         {
-            tokens.Enqueue(buffer);
-            buffer = "";
-        }
-
-        if (start && character == '-')
-        {
-            tokens.Enqueue("0");
-        }
-        start = false || character == '(';
-
-        tokens.Enqueue(character.ToString());
-    }
-}
-
-if (buffer != "") tokens.Enqueue(buffer);
-
-foreach (var token in tokens.GetElements())
-{
-    Console.WriteLine(token);
-}
-Console.WriteLine("\n\n");
-while (tokens.Length() != 0)
-{
-    var something = tokens.Dequeue();
-    if (something.Length != 1 || Char.IsDigit(something.ToCharArray()[0]))
-    {
-        west.Enqueue(something);
-    }
-    else if (south.Length() == 0 && something != "!")
-    {
-        south.Push(something);
-    }
-    else
-    {
-        switch (something)
-        {
-            case "+" or "-":
-            {
-                while (south.Length() != 0 && south.GetLast() != "(")
-                {
-                    west.Enqueue(south.Pop());
-                }
-                south.Push(something);
-                break;
-            }
-            case "*" or "/":
-            {
-                while (south.GetLast() is "*" or "/" or "^")
-                {
-                    west.Enqueue(south.Pop());
-                }
-                south.Push(something);
-                break;
-            }
-            case "^":
-                while (south.GetLast() is "^")
-                {
-                    west.Enqueue(south.Pop());
-                }
-                south.Push(something);
-                break;
-            case "(":
-                south.Push(something);
-                break;
-            case "!":
-                west.Enqueue(something);
-                break;
-            default:
-            {
-                while (south.GetLast() != "(")
-                {
-                    west.Enqueue(south.Pop());
-                }
-
-                south.Pop();
-                break;
-            }
+            Console.WriteLine("Enter an arithmetic expression to evaluate:");
+            var input = Console.ReadLine();
+            var postfixTokens = ConvertToPostfix(Tokenize(input));
+            ArrayList postfixList = new ArrayList();
+            postfixList.AddRange(postfixTokens);
+            var result = Evaluate(postfixList);
+            Console.WriteLine($"Result: {result}");
         }
     }
-}
 
-while (south.Length() != 0)
-{
-    west.Enqueue(south.Pop());
-}
-
-foreach (var token in west.GetElements())
-{
-    Console.WriteLine(token);
-}
-
-
-while (west.Length() != 0)
-{
-    var element = west.Dequeue();
-    if (element == "!")
+    static ArrayList Tokenize(string input)
     {
-        output.Push(Factorial(int.Parse(output.Pop())).ToString());
-    }
-    else if (element.Length == 1 && operators.Contains(element.ToCharArray()[0]))
-    {
-        var number2 = float.Parse(output.Pop());
-        var number1 = float.Parse(output.Pop());
-        switch (element)
+        var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
+        var currentToken = "";
+        var tokens = new ArrayList();
+        var isStartOfExpression = true;
+
+        foreach (var character in input)
         {
-            case "+":
+            if (Char.IsDigit(character))
             {
-                output.Push((number1 + number2).ToString());
-                break;
+                currentToken += character;
             }
-            case "-":
+            else if (operators.Contains(character))
             {
-                output.Push((number1 - number2).ToString());
-                break;
-            }
-            case "*":
-            {
-                output.Push((number1 * number2).ToString());
-                break;
-            }
-            case "/":
-            {
-                output.Push((number1 / number2).ToString());
-                break;
-            }
-            default:
-            {
-                output.Push(Math.Pow(number1, number2).ToString());
-                break;
+                if (currentToken != "")
+                {
+                    tokens.Add(currentToken);
+                    currentToken = "";
+                }
+
+                if (isStartOfExpression && character == '-')
+                {
+                    tokens.Add("0");
+                }
+
+                isStartOfExpression = false || character == '(';
+
+                tokens.Add(character.ToString());
             }
         }
+
+        if (currentToken != "") tokens.Add(currentToken);
+
+        return tokens;
     }
-    else
+
+    static string[] ConvertToPostfix(ArrayList tokens)
     {
-        output.Push(element);
+        Queue outputQueue = new Queue();
+        Stack operatorStack = new Stack();
+        Dictionary<char, int> precedence = new Dictionary<char, int>
+        {
+            { '+', 1 },
+            { '-', 1 },
+            { '*', 2 },
+            { '/', 2 },
+            { '^', 3 }
+        };
+
+        foreach (string token in tokens.GetElements())
+        {
+            if (token.Length != 1 || Char.IsDigit(token.ToCharArray()[0]))
+            {
+                outputQueue.Enqueue(token);
+            }
+            else if (operatorStack.Count() == 0)
+            {
+                operatorStack.Push(token);
+            }
+            else
+            {
+                switch (token)
+                {
+                    case "+" or "-":
+                    {
+                        while (operatorStack.Count() != 0 && operatorStack.GetLast() != "(")
+                        {
+                            outputQueue.Enqueue(operatorStack.Pop());
+                        }
+
+                        operatorStack.Push(token);
+                        break;
+                    }
+                    case "*" or "/":
+                    {
+                        while (operatorStack.Count() != 0 && (operatorStack.GetLast() == "*" || operatorStack.GetLast() == "/" || operatorStack.GetLast() == "^"))
+                        {
+                            char lastOperator = operatorStack.GetLast()[0];
+                            if (precedence[lastOperator] >= precedence[token[0]])
+                            {
+                                outputQueue.Enqueue(operatorStack.Pop());
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+                        operatorStack.Push(token);
+                        break;
+                    }
+                    case "^" or "(":
+                        operatorStack.Push(token);
+                        break;
+                    default:
+                    {
+                        while (operatorStack.GetLast() != "(")
+                        {
+                            outputQueue.Enqueue(operatorStack.Pop());
+                        }
+
+                        operatorStack.Pop();
+                        break;
+                    }
+                }
+            }
+        }
+
+        while (operatorStack.Count() != 0)
+        {
+            outputQueue.Enqueue(operatorStack.Pop());
+        }
+
+        return outputQueue.GetElements().ToArray();
+    }
+
+
+    static double Evaluate(ArrayList postfixTokens)
+    {
+        var operators = new Dictionary<char, Func<double, double, double>>()
+        {
+            ['+'] = (a, b) => a + b,
+            ['-'] = (a, b) => a - b,
+            ['*'] = (a, b) => a * b,
+            ['/'] = (a, b) => a / b,
+            ['^'] = Math.Pow
+        };
+
+        var output = new Stack<double>();
+        foreach (var token in postfixTokens.GetElements())
+        {
+            if (operators.TryGetValue(token[0], out var op))
+            {
+                var number2 = output.Pop();
+                var number1 = output.Pop();
+                output.Push(op(number1, number2));
+            }
+            else
+            {
+                output.Push(double.Parse(token));
+            }
+        }
+
+        return output.Pop();
     }
 }
-Console.WriteLine(output.Pop());
-
-int Factorial(int number)
-{
-    if (number == 1) return 1;
-    return number * Factorial(number - 1);
-}
-
 
 public class ArrayList
 {
@@ -236,7 +235,15 @@ public class ArrayList
     {
         return _array[.._pointer];
     }
-
+    
+    public void AddRange(string[] items)
+    {
+        foreach (var item in items)
+        {
+            Add(item);
+        }
+    }
+    
 }
 
 public class Stack
@@ -267,9 +274,16 @@ public class Stack
 
     public int Length() => _pointer;
 
-    public string GetLast()
+    public string GetLast() => _array[_pointer-1];
+    
+    public int Count()
     {
-        return _pointer == 0 ? "0" : _array[_pointer-1];
+        int count = 0;
+        for (int i = 0; i < _pointer; i++)
+        {
+            count++;
+        }
+        return count;
     }
 }
 
@@ -302,6 +316,7 @@ public class Queue
         {
             _array[i] = _array[i + 1];
         }
+
         return value;
     }
 
@@ -311,5 +326,3 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
-
-//-3 ^ 2 -( - 3) ^ 2 * 7 ^ 2 * 3/  4 - 2  5 / 4 + (2^2^ 2/ 8 * 3)!
