@@ -19,7 +19,7 @@ class Program
 
     static ArrayList Tokenize(string input)
     {
-        var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
+        var operators = new char[] { '+', '-', '/', '*', '^', '(', ')', '!' };
         var currentToken = ""; //an empty string
         var tokens = new ArrayList();
         var isStartOfExpression = true;
@@ -78,6 +78,7 @@ class Program
             {
                 outputQueue.Enqueue(token);
             }
+            else if (token == "!") outputQueue.Enqueue(token);
             else if (operatorStack.Count() == 0)
             {
                 operatorStack.Push(token);
@@ -139,6 +140,12 @@ class Program
         return outputQueue.GetElements().ToArray();
     }
 
+    static int Factorial(int number)
+    {
+        if (number == 1) return 1;
+        return number * Factorial(number - 1);
+    }
+
 
     static double Evaluate(ArrayList postfixTokens)
     {
@@ -154,7 +161,11 @@ class Program
         var output = new Stack<double>();
         foreach (var token in postfixTokens.GetElements())
         {
-            if (operators.TryGetValue(token[0], out var op))
+            if (token == "!" && output.Count > 0)
+            {
+                output.Push(Convert.ToDouble(Factorial(Convert.ToInt32(output.Pop()))));
+            }
+            else if (operators.TryGetValue(token[0], out var op))
             {
                 var number2 = output.Pop();
                 var number1 = output.Pop();
@@ -331,3 +342,4 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
+//-3 ^ 2 -( - 3) ^ 2 * 7 ^ 2 * 3/  4 - 2  5 / 4 + (2^2^ 2/ 8 * 3)!
