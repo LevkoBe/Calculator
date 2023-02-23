@@ -20,15 +20,17 @@ class Program
     static ArrayList Tokenize(string input)
     {
         var operators = new char[] { '+', '-', '/', '*', '^', '(', ')' };
-        var currentToken = "";
+        var currentToken = ""; //an empty string
         var tokens = new ArrayList();
         var isStartOfExpression = true;
+        var lastWasOperator = true;
 
         foreach (var character in input)
         {
             if (Char.IsDigit(character))
             {
                 currentToken += character;
+                lastWasOperator = false;
             }
             else if (operators.Contains(character))
             {
@@ -38,12 +40,13 @@ class Program
                     currentToken = "";
                 }
 
-                if (isStartOfExpression && character == '-')
+                if (lastWasOperator && character == '-')
                 {
                     tokens.Add("0");
                 }
-
+            
                 isStartOfExpression = false || character == '(';
+                lastWasOperator = true;
 
                 tokens.Add(character.ToString());
             }
@@ -53,6 +56,8 @@ class Program
 
         return tokens;
     }
+
+
 
     static string[] ConvertToPostfix(ArrayList tokens)
     {
