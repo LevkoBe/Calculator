@@ -381,4 +381,4 @@ public class Queue
 
     public string[] GetElements() => _array[.._pointer];
 }
-//-3 ^ 2 -( - 3) ^ 2 * 7 ^ 2 * 3/  4 - 2  5 / 4 + (2^2^ 2/ 8 * 3)!
+//-3 ^ 2 -( - 3) ^ 2 * 7 ^ 2 * 3/  4 - 2  5 / 4 - sin(0 * 3) + (2^2^ 2/ 8 * 3)!
