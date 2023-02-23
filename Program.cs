@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Numerics;
 
 class Program
 {
@@ -20,6 +21,7 @@ class Program
     static ArrayList Tokenize(string input)
     {
         var operators = new char[] { '+', '-', '/', '*', '^', '(', ')', '!' };
+        var trigonometry = new string[] { "sin", "cos", "tan", "cot" };
         var currentToken = ""; //an empty string
         var tokens = new ArrayList();
         var isStartOfExpression = true;
@@ -29,6 +31,7 @@ class Program
         {
             if (Char.IsDigit(character))
             {
+                if (!int.TryParse(currentToken, out _)) currentToken = "";
                 currentToken += character;
                 lastWasOperator = false;
             }
@@ -50,6 +53,19 @@ class Program
 
                 tokens.Add(character.ToString());
             }
+            else if (("sincota").Contains(character))
+            {
+                if (!int.TryParse(currentToken, out _))
+                {
+                    currentToken += character;
+                }
+            }
+
+            if (trigonometry.Contains(currentToken))
+            {
+                tokens.Add(currentToken);
+                currentToken = "";
+            }
         }
 
         if (currentToken != "") tokens.Add(currentToken);
@@ -63,6 +79,7 @@ class Program
     {
         Queue outputQueue = new Queue();
         Stack operatorStack = new Stack();
+        var trigonometry = new string[] { "sin", "cos", "tan", "cot" };
         Dictionary<char, int> precedence = new Dictionary<char, int>
         {
             { '+', 1 },
@@ -74,7 +91,7 @@ class Program
 
         foreach (string token in tokens.GetElements())
         {
-            if (token.Length != 1 || Char.IsDigit(token.ToCharArray()[0]))
+            if (Char.IsDigit(token.ToCharArray()[0]))
             {
                 outputQueue.Enqueue(token);
             }
@@ -118,9 +135,14 @@ class Program
                     case "^" or "(":
                         operatorStack.Push(token);
                         break;
-                    default:
+                    case ")":
                     {
                         while (operatorStack.GetLast() != "(")
+                        {
+                            outputQueue.Enqueue(operatorStack.Pop());
+                        }
+
+                        if (operatorStack.Length() != 0 && trigonometry.Contains(operatorStack.GetLast()))
                         {
                             outputQueue.Enqueue(operatorStack.Pop());
                         }
@@ -164,6 +186,23 @@ class Program
             if (token == "!" && output.Count > 0)
             {
                 output.Push(Convert.ToDouble(Factorial(Convert.ToInt32(output.Pop()))));
+            }
+            else if (token == "sin" && output.Count > 0)
+            {
+                output.Push(Math.Sin(output.Pop()));
+            }
+            else if (token == "cos" && output.Count > 0)
+            {
+                output.Push(Math.Cos(output.Pop()));
+            }
+            else if (token == "tan" && output.Count > 0)
+            {
+                output.Push(Math.Sin(output.Pop()));
+            }
+            else if (token == "cot" && output.Count > 0)
+            {
+                var number = output.Pop();
+                output.Push(Math.Cos(number) / Math.Sin(number));
             }
             else if (operators.TryGetValue(token[0], out var op))
             {
