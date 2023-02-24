@@ -17,7 +17,7 @@ class Program
             Console.WriteLine($"Result: {result}");
         }
     }
-
+    
     static ArrayList Tokenize(string input)
     {
         var operators = new char[] { '+', '-', '/', '*', '^', '(', ')', '!' };
@@ -29,9 +29,8 @@ class Program
 
         foreach (var character in input)
         {
-            if (Char.IsDigit(character))
+            if (Char.IsDigit(character) || character == '.')
             {
-                if (!int.TryParse(currentToken, out _)) currentToken = "";
                 currentToken += character;
                 lastWasOperator = false;
             }
@@ -47,24 +46,28 @@ class Program
                 {
                     tokens.Add("0");
                 }
-            
+
                 isStartOfExpression = false || character == '(';
                 lastWasOperator = true;
 
                 tokens.Add(character.ToString());
             }
-            else if (("sincota").Contains(character))
-            {
-                if (!int.TryParse(currentToken, out _))
-                {
-                    currentToken += character;
-                }
-            }
-
-            if (trigonometry.Contains(currentToken))
+            else if (trigonometry.Contains(currentToken))
             {
                 tokens.Add(currentToken);
                 currentToken = "";
+                lastWasOperator = true;
+            }
+            else
+            {
+                currentToken += character;
+            }
+
+            if (currentToken == "pi")
+            {
+                tokens.Add(Math.PI.ToString());
+                currentToken = "";
+                lastWasOperator = false;
             }
         }
 
@@ -72,8 +75,6 @@ class Program
 
         return tokens;
     }
-
-
 
     static string[] ConvertToPostfix(ArrayList tokens)
     {
@@ -171,53 +172,64 @@ class Program
 
     static double Evaluate(ArrayList postfixTokens)
     {
-        var operators = new Dictionary<char, Func<double, double, double>>()
+        var operators = new Dictionary<string, Func<double, double, double>>()
         {
-            ['+'] = (a, b) => a + b,
-            ['-'] = (a, b) => a - b,
-            ['*'] = (a, b) => a * b,
-            ['/'] = (a, b) => a / b,
-            ['^'] = Math.Pow
+            ["+"] = (a, b) => a + b,
+            ["-"] = (a, b) => a - b,
+            ["*"] = (a, b) => a * b,
+            ["/"] = (a, b) => a / b,
+            ["^"] = Math.Pow
+        };
+
+        var trigFunctions = new Dictionary<string, Func<double, double>>()
+        {
+            ["sin"] = x => Math.Sin(x),
+            ["cos"] = x => Math.Cos(x),
+            ["tan"] = x => Math.Tan(x),
+            ["cot"] = x => 1.0 / Math.Tan(x),
         };
 
         var output = new Stack<double>();
         foreach (var token in postfixTokens.GetElements())
         {
-            if (token == "!" && output.Count > 0)
+            if (double.TryParse(token, out double number) || token == "pi")
             {
-                output.Push(Convert.ToDouble(Factorial(Convert.ToInt32(output.Pop()))));
+                if (token == "pi")
+                {
+                    output.Push(Math.PI);
+                }
+                else
+                {
+                    output.Push(number);
+                }
             }
-            else if (token == "sin" && output.Count > 0)
+            else if (token == "!")
             {
-                output.Push(Math.Sin(output.Pop()));
+                // Evaluate factorial
+                var operand = output.Pop();
+                var result = Factorial((int)operand);
+                output.Push(result);
             }
-            else if (token == "cos" && output.Count > 0)
+            else if (trigFunctions.ContainsKey(token))
             {
-                output.Push(Math.Cos(output.Pop()));
+                // Evaluate trigonometric function
+                var operand = output.Pop();
+                var result = trigFunctions[token](operand);
+                output.Push(result);
             }
-            else if (token == "tan" && output.Count > 0)
+            else if (operators.ContainsKey(token))
             {
-                output.Push(Math.Sin(output.Pop()));
-            }
-            else if (token == "cot" && output.Count > 0)
-            {
-                var number = output.Pop();
-                output.Push(Math.Cos(number) / Math.Sin(number));
-            }
-            else if (operators.TryGetValue(token[0], out var op))
-            {
-                var number2 = output.Pop();
-                var number1 = output.Pop();
-                output.Push(op(number1, number2));
-            }
-            else
-            {
-                output.Push(double.Parse(token));
+                // Evaluate binary operator
+                var operand2 = output.Pop();
+                var operand1 = output.Pop();
+                var result = operators[token](operand1, operand2);
+                output.Push(result);
             }
         }
 
         return output.Pop();
     }
+
 }
 
 public class ArrayList
